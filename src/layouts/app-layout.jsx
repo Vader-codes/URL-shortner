@@ -1,21 +1,16 @@
-import React from "react";
+import Header from "@/components/header";
 import { Outlet } from "react-router-dom";
-import Header from "@/components/ui/header";
 
-function AppLayout() {
+const AppLayout = () => {
   return (
     <div>
       <main className="min-h-screen container">
         <Header />
         <Outlet />
       </main>
-
-      <div className="p-10 text-center bg-gray-800 mt-10">
-        {" "}
-        Made by Bipin Rawat{" "}
-      </div>
+      <div className="p-10 text-center bg-gray-800 mt-10"></div>
     </div>
   );
-}
+};
 
 export default AppLayout;

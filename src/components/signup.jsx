@@ -1,27 +1,22 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import Error from "./error";
+import { Input } from "./ui/input";
+import * as Yup from "yup";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { BeatLoader } from "react-spinners";
-import Error from "@/components/ui/error";
-import { useState } from "react";
-import { useEffect } from "react";
-import * as Yup from "yup";
-import { signUp } from "@/db/apiAuth";
-import UseFetch from "@/hooks/use-fetch";
+} from "./ui/card";
+import { Button } from "./ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { UrlState } from "@/context";
+import { signup } from "@/db/apiAuth";
+import { BeatLoader } from "react-spinners";
+import useFetch from "@/hooks/use-fetch";
 
-const SignUp = () => {
+const Signup = () => {
   let [searchParams] = useSearchParams();
   const longLink = searchParams.get("createNew");
 
@@ -43,22 +38,22 @@ const SignUp = () => {
     }));
   };
 
-  const { loading, error, fn: fnSignup, data } = UseFetch(signUp, formData);
-  const { fetchUser } = UrlState();
+  const { loading, error, fn: fnSignup, data } = useFetch(signup, formData);
+
   useEffect(() => {
     if (error === null && data) {
       navigate(`/dashboard?${longLink ? `createNew=${longLink}` : ""}`);
-      fetchUser();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error, loading]);
 
   const handleSignup = async () => {
-    setErrors({});
+    setErrors([]);
     try {
       const schema = Yup.object().shape({
         name: Yup.string().required("Name is required"),
         email: Yup.string()
-          .email("Invalid Email")
+          .email("Invalid email")
           .required("Email is required"),
         password: Yup.string()
           .min(6, "Password must be at least 6 characters")
@@ -67,22 +62,27 @@ const SignUp = () => {
       });
 
       await schema.validate(formData, { abortEarly: false });
-      // api call
       await fnSignup();
-    } catch (e) {
+    } catch (error) {
       const newErrors = {};
-      e?.inner?.forEach((err) => {
-        newErrors[err.path] = err.message;
-      });
-      setErrors(newErrors);
+      if (error?.inner) {
+        error.inner.forEach((err) => {
+          newErrors[err.path] = err.message;
+        });
+
+        setErrors(newErrors);
+      } else {
+        setErrors({ api: error.message });
+      }
     }
   };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>SignUp</CardTitle>
+        <CardTitle>Signup</CardTitle>
         <CardDescription>
-          Create a new accout if you haven&rsquo;t already
+          Create a new account if you haven&rsquo;t already
         </CardDescription>
         {error && <Error message={error?.message} />}
       </CardHeader>
@@ -94,8 +94,8 @@ const SignUp = () => {
             placeholder="Enter Name"
             onChange={handleInputChange}
           />
-          {errors.name && <Error message={errors.name} />}
         </div>
+        {errors.name && <Error message={errors.name} />}
         <div className="space-y-1">
           <Input
             name="email"
@@ -103,8 +103,8 @@ const SignUp = () => {
             placeholder="Enter Email"
             onChange={handleInputChange}
           />
-          {errors.email && <Error message={errors.email} />}
         </div>
+        {errors.email && <Error message={errors.email} />}
         <div className="space-y-1">
           <Input
             name="password"
@@ -112,17 +112,17 @@ const SignUp = () => {
             placeholder="Enter Password"
             onChange={handleInputChange}
           />
-          {errors.password && <Error message={errors.password} />}
         </div>
+        {errors.password && <Error message={errors.password} />}
         <div className="space-y-1">
-          <Input
+          <input
             name="profile_pic"
             type="file"
             accept="image/*"
             onChange={handleInputChange}
           />
-          {errors.profile_pic && <Error message={errors.profile_pic} />}
         </div>
+        {errors.profile_pic && <Error message={errors.profile_pic} />}
       </CardContent>
       <CardFooter>
         <Button onClick={handleSignup}>
@@ -137,4 +137,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default Signup;
