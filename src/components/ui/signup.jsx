@@ -20,7 +20,13 @@ import { signUp } from "@/db/apiAuth";
 import UseFetch from "@/hooks/use-fetch";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { UrlState } from "@/context";
+
 const SignUp = () => {
+  let [searchParams] = useSearchParams();
+  const longLink = searchParams.get("createNew");
+
+  const navigate = useNavigate();
+
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     name: "",
@@ -28,10 +34,6 @@ const SignUp = () => {
     password: "",
     profile_pic: null,
   });
-
-  const navigate = useNavigate();
-  let [searchParams] = useSearchParams();
-  const longLink = searchParams.get("createNew");
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -41,7 +43,7 @@ const SignUp = () => {
     }));
   };
 
-  const { data, error, loading, fn: fnSignup } = UseFetch(signUp, formData);
+  const { loading, error, fn: fnSignup, data } = UseFetch(signUp, formData);
   const { fetchUser } = UrlState();
   useEffect(() => {
     if (error === null && data) {
@@ -82,7 +84,7 @@ const SignUp = () => {
         <CardDescription>
           Create a new accout if you haven&rsquo;t already
         </CardDescription>
-        {error && <Error message={error.message} />}
+        {error && <Error message={error?.message} />}
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="space-y-1">
